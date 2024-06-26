@@ -1,0 +1,14 @@
+application:
+  timeout:
+    read: 1000
+    write: 1000
+  port: 8888
+  uploadPath: "./upload"
+  mode: "debug"
+  appId: "go"
+  apiBaseRoute: "/api"
+
+db:
+  username: "root"
+  password: "root"
+  connection: "tcp(127.0.0.1:3306)/go?charset=utf8mb4&parseTime=True&loc=Local"
