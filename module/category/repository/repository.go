@@ -77,3 +77,8 @@ func (c CategoryRepository) FindUserRecordsByUserIdPreload(userId uint, pageNumb
 		Error
 	return count, result, err
 }
+
+func (c CategoryRepository) DeleteUserFinanceRecordById(recordId uint) error {
+	var userFinanceRecord model.UserFinanceRecord
+	return c.orm.Delete(&userFinanceRecord, recordId).Error
+}

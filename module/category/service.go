@@ -12,4 +12,5 @@ type Service interface {
 	FindUserCategoryByUsernameAndCode(username string, code string) (model.UserFinanceCategory, error)
 	CreateUserFinanceRecord(userFinanceRecord *model.UserFinanceRecord) error
 	FindUserRecordsByUserIdPreload(userId uint, pageNumber int, pageSize int) (int64, []model.UserFinanceRecord, error)
+	DeleteUserFinanceRecordById(recordId uint) error
 }

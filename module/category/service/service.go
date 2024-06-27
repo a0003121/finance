@@ -44,3 +44,7 @@ func (c CategoryService) CreateUserFinanceRecord(userFinanceRecord *model.UserFi
 func (c CategoryService) FindUserRecordsByUserIdPreload(userId uint, pageNumber int, pageSize int) (int64, []model.UserFinanceRecord, error) {
 	return c.repo.FindUserRecordsByUserIdPreload(userId, pageNumber, pageSize)
 }
+
+func (c CategoryService) DeleteUserFinanceRecordById(recordId uint) error {
+	return c.repo.DeleteUserFinanceRecordById(recordId)
+}

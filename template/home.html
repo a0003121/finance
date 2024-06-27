@@ -89,6 +89,7 @@
             <th scope="col">日期</th>
             <th scope="col">類別</th>
             <th scope="col">金額</th>
+            <th scope="col"></th>
           </tr>
         </thead>
         <tbody>
@@ -96,6 +97,7 @@
             <td>{{ item.spend_time }}</td>
             <td>{{ item.code }}</td>
             <td>{{ item.price }}</td>
+            <td><button v-on:click="deleteRecord(item.id)">Delete</button></td>
           </tr>
         </tbody>
       </table>
@@ -157,7 +159,7 @@
           const categoryResult = await categoryResponse.json();
 
 
-          const recordResponse = await fetch('http://localhost:8888/user/record/' + decodedPayload.username);
+          const recordResponse = await fetch('http://localhost:8888/user/' + decodedPayload.username + '/record');
           const recordResult = await recordResponse.json();
 
           this.username = decodedPayload.username;
@@ -166,8 +168,7 @@
           this.loading = false;
         },
         async addRecord() {
-          console.log(this.price);
-          const config = {
+          let config = {
             method: 'POST',
             headers: {
               'Accept': 'application/json',
@@ -191,10 +192,28 @@
             icon: "success",
             title: "success",
             showConfirmButton: false,
-            timer: 1500
+            timer: 1000
           });
           this.fetchData();
+        },
+        deleteRecord(id) {
+          let config = {
+            method: 'DELETE',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            }
+          }
 
+          const recordResponse = fetch('http://localhost:8888/user/record/' + id, config);
+          Swal.fire({
+            position: "top-end",
+            icon: "success",
+            title: "success",
+            showConfirmButton: false,
+            timer: 1000
+          });
+          this.fetchData();
         }
       }
     });

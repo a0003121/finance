@@ -65,7 +65,7 @@ func (u UserService) CreateUserData(user *Users, userRoleType *UserRoleType) err
 	_, userRoleErr := u.repo.CreateUserRole(tx, &userRole)
 	if userRoleErr != nil {
 		tx.Rollback()
-		return userErr
+		return userRoleErr
 	}
 
 	categoryErr := u.categoryService.CreateUserFinanceCategory(tx, *user)

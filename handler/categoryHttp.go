@@ -28,7 +28,7 @@ func NewCategoryHandler(categorySvc category.Service, userSvc user.Service, serv
 		handler.FindUserCategories(c)
 	})
 
-	server.GET("/user/record/:username", func(c *gin.Context) {
+	server.GET("/user/:username/record", func(c *gin.Context) {
 		log.Printf("[%s]%s", c.Request.Method, c.Request.URL)
 		//_ = jwt.Authenticate(c) && jwt.IsAdmin(c)
 	}, func(c *gin.Context) {
@@ -41,9 +41,32 @@ func NewCategoryHandler(categorySvc category.Service, userSvc user.Service, serv
 	}, func(c *gin.Context) {
 		handler.CreateUserRecord(c)
 	})
+
+	server.DELETE("/user/record/:recordId", func(c *gin.Context) {
+		log.Printf("[%s]%s", c.Request.Method, c.Request.URL)
+		//_ = jwt.Authenticate(c) && jwt.IsAdmin(c)
+	}, func(c *gin.Context) {
+		handler.DeleteUserRecord(c)
+	})
 	return handler
 }
 
+func (handler *CategoryHttpHandler) DeleteUserRecord(c *gin.Context) {
+	var recordId = c.Param("recordId")
+
+	recordIdInt, recordIdErr := strconv.Atoi(recordId) // convert string to int
+	if recordIdErr != nil {
+		c.JSON(http.StatusOK, common.Fail(recordIdErr.Error()))
+		return
+	}
+	deleteErr := handler.categorySvc.DeleteUserFinanceRecordById(uint(recordIdInt))
+	if deleteErr != nil {
+		c.JSON(http.StatusOK, common.Fail(deleteErr.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, common.Success(""))
+}
 func (handler *CategoryHttpHandler) FindUserCategories(c *gin.Context) {
 	var username = c.Param("username")
 	result, err := handler.categorySvc.FindUserCategoriesByUsername(username)
