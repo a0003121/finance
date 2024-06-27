@@ -1,17 +1,15 @@
 package main
 
 import (
-	categoryHttp "GoProject/module/category/delivery"
+	"GoProject/handler"
 	categoryRepository "GoProject/module/category/repository"
 	category "GoProject/module/category/service"
-	loginHttp "GoProject/module/login/delivery"
 	loginSvc "GoProject/module/login/service"
-	userHttp "GoProject/module/user/delivery"
 	userRepository "GoProject/module/user/repository"
 	userSvc "GoProject/module/user/service"
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"gorm.io/gorm"
 	"log"
 	"time"
 )
@@ -31,36 +29,8 @@ func main() {
 		return
 	}
 
-	// CORS configuration
-	corsConfig := cors.Config{
-		AllowAllOrigins:  true,
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}
-
-	//gin.SetMode(gin.ReleaseMode)
-	server := gin.Default()
-
-	// Apply the CORS middleware to the router
-	server.Use(cors.New(corsConfig))
-
-	userRepo := userRepository.NewUserRepository(db)
-	categoryRepo := categoryRepository.NewCategoryRepository(db)
-	categorySvc := category.NewCategoryService(categoryRepo)
-	userService := userSvc.NewUserService(userRepo, categorySvc)
-	loginService := loginSvc.NewLoginService(userService)
-	userHttp.NewUserHttpHandler(userService, server)
-	loginHttp.NewLoginHttpHandler(loginService, server)
-	categoryHttp.NewCategoryHandler(categorySvc, userService, server)
-
-	server.GET("/go", func(context *gin.Context) {
-		var intChen = make(chan int, 3)
-		go aync(intChen)
-		go aync2(intChen)
-	})
+	server := loadServer()
+	registerHandler(db, server)
 
 	err := server.Run(":" + viper.GetString("application.port"))
 	if err != nil {
@@ -68,6 +38,23 @@ func main() {
 		return
 	}
 
+}
+
+func registerHandler(db *gorm.DB, server *gin.Engine) {
+	userRepo := userRepository.NewUserRepository(db)
+	categoryRepo := categoryRepository.NewCategoryRepository(db)
+	categorySvc := category.NewCategoryService(categoryRepo)
+	userService := userSvc.NewUserService(userRepo, categorySvc)
+	loginService := loginSvc.NewLoginService(userService)
+	handler.NewUserHttpHandler(userService, server)
+	handler.NewLoginHttpHandler(loginService, server)
+	handler.NewCategoryHandler(categorySvc, userService, server)
+
+	server.GET("/go", func(context *gin.Context) {
+		var intChen = make(chan int, 3)
+		go aync(intChen)
+		go aync2(intChen)
+	})
 }
 
 func aync(intChen chan int) {

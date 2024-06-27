@@ -9,6 +9,15 @@ CREATE TABLE IF NOT EXISTS users
     UNIQUE INDEX (username)
 );
 
+CREATE TABLE IF NOT EXISTS user_role_type
+(
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    code        VARCHAR(50) NOT NULL,
+    disabled    tinyint     NOT NULL DEFAULT 0,
+    create_time DATETIME    NOT NULL,
+    update_time DATETIME
+);
+
 CREATE TABLE IF NOT EXISTS user_roles
 (
     id                INT AUTO_INCREMENT PRIMARY KEY,
@@ -18,15 +27,6 @@ CREATE TABLE IF NOT EXISTS user_roles
     update_time       DATETIME,
     FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (user_role_type_id) REFERENCES user_role_type (id)
-);
-
-CREATE TABLE IF NOT EXISTS user_role_type
-(
-    id          INT AUTO_INCREMENT PRIMARY KEY,
-    code        VARCHAR(50) NOT NULL,
-    disabled    tinyint     NOT NULL DEFAULT 0,
-    create_time DATETIME    NOT NULL,
-    update_time DATETIME
 );
 
 

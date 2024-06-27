@@ -1,4 +1,4 @@
-package delivery
+package handler
 
 import (
 	"GoProject/common"
@@ -17,8 +17,8 @@ type UserHttpHandler struct {
 	svc user.Service
 }
 
-func NewUserHttpHandler(svc user.Service, server *gin.Engine) user.HttpHandler {
-	var handler = &UserHttpHandler{svc: svc}
+func NewUserHttpHandler(svc user.Service, server *gin.Engine) UserHttpHandler {
+	var handler = UserHttpHandler{svc: svc}
 
 	server.GET("/user/:username", func(c *gin.Context) {
 		log.Printf("[%s]%s", c.Request.Method, c.Request.URL)

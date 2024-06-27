@@ -1,4 +1,4 @@
-package delivery
+package handler
 
 import (
 	"GoProject/common"
@@ -12,8 +12,8 @@ type LoginHttpHandler struct {
 	loginService login.Service
 }
 
-func NewLoginHttpHandler(loginService login.Service, server *gin.Engine) login.HttpHandler {
-	handler := &LoginHttpHandler{loginService: loginService}
+func NewLoginHttpHandler(loginService login.Service, server *gin.Engine) LoginHttpHandler {
+	handler := LoginHttpHandler{loginService: loginService}
 
 	server.POST("/api/login", func(c *gin.Context) {
 		log.Printf("[%s]%s", c.Request.Method, c.Request.URL)

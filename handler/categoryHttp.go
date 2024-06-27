@@ -1,4 +1,4 @@
-package delivery
+package handler
 
 import (
 	"GoProject/common"
@@ -18,8 +18,8 @@ type CategoryHttpHandler struct {
 	userSvc     user.Service
 }
 
-func NewCategoryHandler(categorySvc category.Service, userSvc user.Service, server *gin.Engine) category.HttpHandler {
-	var handler = &CategoryHttpHandler{categorySvc: categorySvc, userSvc: userSvc}
+func NewCategoryHandler(categorySvc category.Service, userSvc user.Service, server *gin.Engine) CategoryHttpHandler {
+	var handler = CategoryHttpHandler{categorySvc: categorySvc, userSvc: userSvc}
 
 	server.GET("/user/category/:username", func(c *gin.Context) {
 		log.Printf("[%s]%s", c.Request.Method, c.Request.URL)
