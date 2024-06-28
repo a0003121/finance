@@ -48,6 +48,13 @@ func NewCategoryHandler(categorySvc category.Service, userSvc user.Service, serv
 	}, func(c *gin.Context) {
 		handler.DeleteUserRecord(c)
 	})
+
+	server.PUT("/user/:username/record/:recordId", func(c *gin.Context) {
+		log.Printf("[%s]%s", c.Request.Method, c.Request.URL)
+		//_ = jwt.Authenticate(c) && jwt.IsAdmin(c)
+	}, func(c *gin.Context) {
+		handler.UpdateUserRecord(c)
+	})
 	return handler
 }
 
@@ -67,6 +74,53 @@ func (handler *CategoryHttpHandler) DeleteUserRecord(c *gin.Context) {
 
 	c.JSON(http.StatusOK, common.Success(""))
 }
+
+func (handler *CategoryHttpHandler) UpdateUserRecord(c *gin.Context) {
+	var recordId = c.Param("recordId")
+	var username = c.Param("username")
+	recordIdInt, recordIdErr := strconv.Atoi(recordId) // convert string to int
+	if recordIdErr != nil {
+		c.JSON(http.StatusOK, common.Fail(recordIdErr.Error()))
+		return
+	}
+	var requestBody UpdateUserRecordRequestData
+
+	if err := c.ShouldBindBodyWithJSON(&requestBody); err != nil {
+		c.JSON(http.StatusOK, common.Fail(err.Error()))
+		return
+	}
+
+	userCategory, categoryErr := handler.categorySvc.FindUserCategoryByUsernameAndCode(username, requestBody.Code)
+	if categoryErr != nil {
+		c.JSON(http.StatusOK, common.Fail(categoryErr.Error()))
+	}
+
+	// Parse the date string to time.Time
+	date, err := time.Parse("2006-01-02", requestBody.SpendDate)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid date format"})
+		return
+	}
+
+	datas := map[string]interface{}{
+		"UserFinanceCategoryId": userCategory.ID,
+		"Price":                 requestBody.Price,
+		"SpendDate":             date,
+	}
+	updateErr := handler.categorySvc.ModifyUserFinanceRecordById(uint(recordIdInt), datas)
+	if updateErr != nil {
+		c.JSON(http.StatusOK, common.Fail(updateErr.Error()))
+	}
+
+	c.JSON(http.StatusOK, common.Success(""))
+}
+
+type UpdateUserRecordRequestData struct {
+	Code      string `json:"code" binding:"required"`
+	SpendDate string `json:"spend_date" binding:"required"`
+	Price     uint   `json:"price" binding:"required"`
+}
+
 func (handler *CategoryHttpHandler) FindUserCategories(c *gin.Context) {
 	var username = c.Param("username")
 	result, err := handler.categorySvc.FindUserCategoriesByUsername(username)

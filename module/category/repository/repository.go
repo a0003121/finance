@@ -71,7 +71,7 @@ func (c CategoryRepository) FindUserRecordsByUserIdPreload(userId uint, pageNumb
 	err := c.orm.Preload("UserFinanceCategory").
 		Where("users_id = ?", userId).
 		Order("spend_date desc").
-		Offset(offset).  // Offset for the pages
+		Offset(offset). // Offset for the pages
 		Limit(pageSize). // Limit for the page size
 		Find(&result).
 		Error
@@ -81,4 +81,16 @@ func (c CategoryRepository) FindUserRecordsByUserIdPreload(userId uint, pageNumb
 func (c CategoryRepository) DeleteUserFinanceRecordById(recordId uint) error {
 	var userFinanceRecord model.UserFinanceRecord
 	return c.orm.Delete(&userFinanceRecord, recordId).Error
+}
+
+func (c CategoryRepository) ModifyUserFinanceRecordById(recordId uint, data map[string]interface{}) error {
+	var err error
+	var userFinanceRecord model.UserFinanceRecord
+	findErr := c.orm.First(&userFinanceRecord, recordId).Error
+
+	if findErr != nil {
+		return findErr
+	}
+	err = c.orm.Model(&userFinanceRecord).Updates(data).Error
+	return err
 }

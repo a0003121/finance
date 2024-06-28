@@ -31,7 +31,7 @@
             <td>{{ item.code }}</td>
             <td>{{ item.price }}</td>
             <td>
-              <button class="pretty-button" v-on:click="deleteRecord(item.id)">Edit</button>
+              <button class="pretty-button" v-on:click="editRecord(item)">Edit</button>
               <button class="pretty-button" v-on:click="deleteRecord(item.id)">Delete</button>
             </td>
           </tr>
@@ -99,43 +99,6 @@
 
         this.fetchOption();
         this.fetchRecord();
-
-
-        Swal.fire({
-          title: 'Multiple inputs',
-          showCancelButton: true,
-          html:
-            '<input id="swal-input1" class="swal2-input">' +
-            '<input id="swal-input2" class="swal2-input">',
-          preConfirm: async () => {
-            try {
-              const githubUrl = `
-                  https://api.github.com/users/${document.getElementById("swal-input1").value}
-                `;
-              const response = await fetch(githubUrl);
-              if (!response.ok) {
-                return Swal.showValidationMessage(`
-          ${JSON.stringify(await response.json())}
-        `);
-              }
-              return response.json();
-            } catch (error) {
-              Swal.showValidationMessage(`
-        Request failed: ${error}
-      `);
-            }
-          },
-          allowOutsideClick: () => !Swal.isLoading()
-        }).then((result) => {
-          if (result.isConfirmed) {
-            Swal.fire({
-              title: `${result.value.login}'s avatar`,
-              imageUrl: result.value.avatar_url
-            });
-          }
-        });
-
-
 
       },
       computed: {
@@ -225,6 +188,64 @@
         },
         handleSelection() {
           this.fetchRecord();
+        },
+        async editRecord(editItem) {
+          console.log(editItem);
+          Swal.fire({
+            title: 'Multiple inputs',
+            showCancelButton: true,
+            html: `
+              <label>類別:</label>
+              <select id="editCategory"></select>
+              <br>
+              <label for="editPrice">price:</label>
+              <input type="number" id="editPrice" value = ${editItem.price}>
+              <br>
+              <label for="editDate">Date:</label>
+              <input type="date" id="editDate" value = ${editItem.spend_time}>
+              <br>
+              `,
+            didOpen: () => {
+              let select = document.getElementById('editCategory');
+              this.categoryResponseData.data.forEach(item => {
+                let option = document.createElement('option');
+                option.value = item.code;
+                option.textContent = item.code;
+                if(editItem.code == item.code) {
+                  option.selected = true;
+                }
+                select.appendChild(option);
+              });
+            },
+            preConfirm: async () => {
+              try {
+                let githubUrl = `
+                  https://api.github.com/users/${document.getElementById("swal-input1").value}
+                `;
+                let response = await fetch(githubUrl);
+                if (!response.ok) {
+                  return Swal.showValidationMessage(`
+          ${JSON.stringify(await response.json())}
+        `);
+                }
+                return response.json();
+              } catch (error) {
+                Swal.showValidationMessage(`
+        Request failed: ${error}
+      `);
+              }
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+          }).then((result) => {
+            if (result.isConfirmed) {
+              Swal.fire({
+                title: `${result.value.login}'s avatar`,
+                imageUrl: result.value.avatar_url
+              });
+            }
+          });
+
+
         }
       }
     });

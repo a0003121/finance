@@ -48,3 +48,7 @@ func (c CategoryService) FindUserRecordsByUserIdPreload(userId uint, pageNumber 
 func (c CategoryService) DeleteUserFinanceRecordById(recordId uint) error {
 	return c.repo.DeleteUserFinanceRecordById(recordId)
 }
+
+func (c CategoryService) ModifyUserFinanceRecordById(recordId uint, data map[string]interface{}) error {
+	return c.repo.ModifyUserFinanceRecordById(recordId, data)
+}

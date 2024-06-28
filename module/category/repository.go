@@ -14,4 +14,5 @@ type Repository interface {
 	CreateUserFinanceRecord(userFinanceRecord *model.UserFinanceRecord) error
 	FindUserRecordsByUserIdPreload(userId uint, pageNumber int, pageSize int) (int64, []model.UserFinanceRecord, error)
 	DeleteUserFinanceRecordById(recordId uint) error
+	ModifyUserFinanceRecordById(recordId uint, data map[string]interface{}) error
 }

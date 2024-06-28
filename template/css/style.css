@@ -42,58 +42,26 @@ body {
     gap: 10px;
   }
 
-  form label {
+  label {
     font-weight: bold;
   }
 
-  form input,
-  form select,
-  form button {
+  input,
+  select,
+  button {
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 16px;
   }
 
-  form button {
+  button {
     background-color: #28a745;
     color: white;
     cursor: pointer;
   }
 
-  form button:disabled {
+  button:disabled {
     background-color: #ccc;
     cursor: not-allowed;
-  }
-
-  .pretty-button {
-    background-color: #ca8f57;
-    /* Green background */
-    border: none;
-    /* Remove borders */
-    color: white;
-    /* White text */
-    padding: 10px 10px;
-    /* Some padding */
-    text-align: center;
-    /* Centered text */
-    text-decoration: none;
-    /* Remove underline */
-    display: inline-block;
-    /* Get it to line up properly */
-    font-size: 16px;
-    /* Increase font size */
-    margin: 4px 2px;
-    /* Add some margin */
-    cursor: pointer;
-    /* Pointer/hand icon on hover */
-    border-radius: 12px;
-    /* Rounded corners */
-  }
-
-  .pretty-button:hover {
-    background-color: #94713c;
-    /* White background on hover */
-    color: black;
-    /* Black text on hover */
   }
