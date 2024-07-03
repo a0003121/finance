@@ -24,14 +24,14 @@ func NewUserHttpHandler(svc user.Service, server *gin.Engine) UserHttpHandler {
 		log.Printf("[%s]%s", c.Request.Method, c.Request.URL)
 		//_ = jwt.Authenticate(c) && jwt.IsAdmin(c)
 	}, func(c *gin.Context) {
-		handler.FindUser(c)
+		handler.findUser(c)
 	})
 
 	server.POST("/user", func(c *gin.Context) {
 		log.Printf("[%s]%s with request body %s", c.Request.Method, c.Request.URL, c.Request.Body)
 		//_ = jwt.Authenticate(c) && jwt.IsAdmin(c)
 	}, func(c *gin.Context) {
-		handler.CreateUsers(c)
+		handler.createUsers(c)
 	})
 
 	server.GET("/user_roles", func(c *gin.Context) {
@@ -39,7 +39,7 @@ func NewUserHttpHandler(svc user.Service, server *gin.Engine) UserHttpHandler {
 		//_ = jwt.Authenticate(c) && jwt.IsAdmin(c)
 
 	}, func(c *gin.Context) {
-		handler.FindUserRoles(c)
+		handler.findUserRoles(c)
 	})
 
 	//delete user
@@ -47,7 +47,7 @@ func NewUserHttpHandler(svc user.Service, server *gin.Engine) UserHttpHandler {
 		log.Printf("[%s]%s with request body %s", c.Request.Method, c.Request.URL, c.Request.Body)
 		//_ = jwt.Authenticate(c) && jwt.IsAdmin(c)
 	}, func(c *gin.Context) {
-		handler.DeleteUser(c)
+		handler.deleteUser(c)
 	})
 
 	//update user email
@@ -55,13 +55,13 @@ func NewUserHttpHandler(svc user.Service, server *gin.Engine) UserHttpHandler {
 		log.Printf("[%s]%s with request body %s", c.Request.Method, c.Request.URL, c.Request.Body)
 		//jwt.Authenticate(c)
 	}, func(c *gin.Context) {
-		handler.UpdateUserEmail(c)
+		handler.updateUserEmail(c)
 	})
 
 	return handler
 }
 
-func (g *UserHttpHandler) FindUser(c *gin.Context) {
+func (g *UserHttpHandler) findUser(c *gin.Context) {
 	var username = c.Param("username")
 	users, err := g.svc.FindUser(username)
 	if err != nil {
@@ -77,7 +77,7 @@ type CreateUserRequestBody struct {
 	Email    string `json:"email" binding:"required,email"`
 }
 
-func (g *UserHttpHandler) CreateUsers(c *gin.Context) {
+func (g *UserHttpHandler) createUsers(c *gin.Context) {
 	var requestBody CreateUserRequestBody
 
 	if err := c.ShouldBindBodyWithJSON(&requestBody); err != nil {
@@ -107,7 +107,7 @@ func (g *UserHttpHandler) CreateUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, common.Success(users))
 }
 
-func (g *UserHttpHandler) FindUserRoles(c *gin.Context) {
+func (g *UserHttpHandler) findUserRoles(c *gin.Context) {
 	var username = c.DefaultQuery("username", "")
 	var userRoles, err = g.svc.FindUserRoleTypeByUsername(username)
 	if err != nil {
@@ -117,7 +117,7 @@ func (g *UserHttpHandler) FindUserRoles(c *gin.Context) {
 	c.JSON(http.StatusOK, common.Success(userRoles))
 }
 
-func (g *UserHttpHandler) DeleteUser(c *gin.Context) {
+func (g *UserHttpHandler) deleteUser(c *gin.Context) {
 	var username = c.Param("username")
 	users, err := g.svc.FindUser(username)
 	if err != nil {
@@ -138,7 +138,7 @@ type UpdateUserRequestBody struct {
 	Email string
 }
 
-func (g *UserHttpHandler) UpdateUserEmail(c *gin.Context) {
+func (g *UserHttpHandler) updateUserEmail(c *gin.Context) {
 	var username = c.Param("username")
 	var requestBody UpdateUserRequestBody
 

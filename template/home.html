@@ -10,63 +10,72 @@
 </head>
 
 <body>
+
   <div id="app">
-    <div v-if="loading">Loading...</div>
-    <div v-else>
-      <h1>記的帳</h1>
 
-      <!------------User Record------------>
-      <table>
-        <thead>
-          <tr>
-            <th scope="col">日期</th>
-            <th scope="col">類別</th>
-            <th scope="col">金額</th>
-            <th scope="col"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="item in recordResponseData.data.details" :key="item">
-            <td>{{ item.spend_time }}</td>
-            <td>{{ item.code }}</td>
-            <td>{{ item.price }}</td>
-            <td>
-              <button class="pretty-button" v-on:click="editRecord(item)">Edit</button>
-              <button class="pretty-button" v-on:click="deleteRecord(item.id)">Delete</button>
-            </td>
-          </tr>
-          <!--page-->
-        <tfoot>
-          <tr>
-            <td colspan="4">
-              <select v-model="recordPage" @change="handleSelection">
-                <option v-for="number in generateNumbers()" :key="number" :value="number">{{ number }}</option>
-              </select>
-            </td>
-          </tr>
-        </tfoot>
-        </tbody>
-      </table>
+    <div v-if="loading">
+      <div id="preloader">
+        <div id="status">&nbsp;</div>
+      </div>
+    </div>
 
-      <!------------Add Record------------>
-      <form @submit.prevent="addRecord">
+    <h1>記的帳</h1>
 
-        <label>類別:</label>
-        <select v-model="types">
-          <option v-for="item in categoryResponseData.data" :key="item">
-            {{ item.code }}
-          </option>
-        </select>
-        <br>
-        <label for="price">price:</label>
-        <input type="number" id="price" v-model.number="price">
-        <br>
-        <label for="date">Date:</label>
-        <input type="date" id="date" v-model="date">
-        <br>
-        <button type="submit" :disabled="notValid">Add Record</button>
-      </form>
+    <!------------User Record------------>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">日期</th>
+          <th scope="col">類別</th>
+          <th scope="col">金額</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="item in recordResponseData.data.details" :key="item">
+          <td>{{ item.spend_time }}</td>
+          <td>{{ item.code }}</td>
+          <td>{{ item.price }}</td>
+          <td>
+            <button class="pretty-button" v-on:click="editRecord(item)">Edit</button>
+            <button class="pretty-button" v-on:click="deleteRecord(item.id)">Delete</button>
+          </td>
+        </tr>
+        <!--page-->
+      <tfoot>
+        <tr>
+          <td colspan="4">
+            <select v-model="recordPage" @change="handleSelection">
+              <option v-for="number in generateNumbers()" :key="number" :value="number">{{ number }}</option>
+            </select>
+          </td>
+        </tr>
+      </tfoot>
+      </tbody>
+    </table>
 
+    <!------------Add Record------------>
+    <form @submit.prevent="addRecord">
+
+      <label>類別:</label>
+      <select v-model="types">
+        <option v-for="item in categoryResponseData.data" :key="item">
+          {{ item.code }}
+        </option>
+      </select>
+      <br>
+      <label for="price">price:</label>
+      <input type="number" id="price" v-model.number="price">
+      <br>
+      <label for="date">Date:</label>
+      <input type="date" id="date" v-model="date">
+      <br>
+      <button type="submit" :disabled="notValid">Add Record</button>
+    </form>
+
+    <div>
+      <button class="pretty-button" v-on:click="downloadExcel">Download Excel</button>
+      <input id="fileUpload" type="file" @change="handleFileUpload" />
     </div>
   </div>
 
@@ -107,6 +116,41 @@
         }
       },
       methods: {
+        async handleFileUpload(event) {
+          this.loading = true;
+          let formData = new FormData();
+          formData.append('file', event.target.files[0]);
+          const response = await fetch('http://localhost:8888/user/003/excel_upload', {
+            method: 'POST',
+            body: formData
+          });
+
+          document.getElementById('fileUpload').value = '';
+          this.recordPage = 1;
+          this.fetchRecord();
+          this.loading = false;
+          Swal.fire({
+            position: "top-end",
+            icon: "success",
+            title: "success",
+            showConfirmButton: false,
+            timer: 1000
+          });
+      
+        },
+        async downloadExcel() {
+          this.loading = true;
+          let response = await fetch(`http://localhost:8888/user/${this.username}/excel`);
+          let blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', 'record.xlsx');
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          this.loading = false;
+        },
         async fetchOption() {
           var jwtToken = sessionStorage.getItem('authToken');
           const base64Url = jwtToken.split('.')[1];
@@ -211,7 +255,7 @@
                 let option = document.createElement('option');
                 option.value = item.code;
                 option.textContent = item.code;
-                if(editItem.code == item.code) {
+                if (editItem.code == item.code) {
                   option.selected = true;
                 }
                 select.appendChild(option);
@@ -219,29 +263,45 @@
             },
             preConfirm: async () => {
               try {
+
+                let config = {
+                  method: 'PUT',
+                  headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    "code": document.getElementById("editCategory").value,
+                    "spend_date": document.getElementById("editDate").value,
+                    "price": parseInt(document.getElementById("editPrice").value),
+                  })
+                };
+
                 let githubUrl = `
-                  https://api.github.com/users/${document.getElementById("swal-input1").value}
+                  http://localhost:8888/user/${this.username}/record/${editItem.id}
                 `;
-                let response = await fetch(githubUrl);
-                if (!response.ok) {
-                  return Swal.showValidationMessage(`
-          ${JSON.stringify(await response.json())}
-        `);
-                }
+
+                let response = await fetch(githubUrl, config);
                 return response.json();
               } catch (error) {
                 Swal.showValidationMessage(`
-        Request failed: ${error}
-      `);
+                  Request failed: ${error}
+                `);
               }
             },
             allowOutsideClick: () => !Swal.isLoading()
           }).then((result) => {
             if (result.isConfirmed) {
               Swal.fire({
-                title: `${result.value.login}'s avatar`,
-                imageUrl: result.value.avatar_url
+                position: "top-end",
+                icon: "success",
+                title: "success",
+                showConfirmButton: false,
+                timer: 1000
               });
+
+              this.recordPage = 1;
+              this.fetchRecord();
             }
           });
 

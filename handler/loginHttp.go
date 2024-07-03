@@ -17,13 +17,13 @@ func NewLoginHttpHandler(loginService login.Service, server *gin.Engine) LoginHt
 
 	server.POST("/api/login", func(c *gin.Context) {
 		log.Printf("[%s]%s", c.Request.Method, c.Request.URL)
-		handler.ApiLogin(c)
+		handler.apiLogin(c)
 	})
 
 	return handler
 }
 
-func (l LoginHttpHandler) ApiLogin(c *gin.Context) {
+func (l LoginHttpHandler) apiLogin(c *gin.Context) {
 	var username string
 	var password string
 

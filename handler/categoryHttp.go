@@ -25,40 +25,40 @@ func NewCategoryHandler(categorySvc category.Service, userSvc user.Service, serv
 		log.Printf("[%s]%s", c.Request.Method, c.Request.URL)
 		//_ = jwt.Authenticate(c) && jwt.IsAdmin(c)
 	}, func(c *gin.Context) {
-		handler.FindUserCategories(c)
+		handler.findUserCategories(c)
 	})
 
 	server.GET("/user/:username/record", func(c *gin.Context) {
 		log.Printf("[%s]%s", c.Request.Method, c.Request.URL)
 		//_ = jwt.Authenticate(c) && jwt.IsAdmin(c)
 	}, func(c *gin.Context) {
-		handler.FindUserRecords(c)
+		handler.findUserRecords(c)
 	})
 
 	server.POST("/user/record", func(c *gin.Context) {
 		log.Printf("[%s]%s", c.Request.Method, c.Request.URL)
 		//_ = jwt.Authenticate(c) && jwt.IsAdmin(c)
 	}, func(c *gin.Context) {
-		handler.CreateUserRecord(c)
+		handler.createUserRecord(c)
 	})
 
 	server.DELETE("/user/record/:recordId", func(c *gin.Context) {
 		log.Printf("[%s]%s", c.Request.Method, c.Request.URL)
 		//_ = jwt.Authenticate(c) && jwt.IsAdmin(c)
 	}, func(c *gin.Context) {
-		handler.DeleteUserRecord(c)
+		handler.deleteUserRecord(c)
 	})
 
 	server.PUT("/user/:username/record/:recordId", func(c *gin.Context) {
 		log.Printf("[%s]%s", c.Request.Method, c.Request.URL)
 		//_ = jwt.Authenticate(c) && jwt.IsAdmin(c)
 	}, func(c *gin.Context) {
-		handler.UpdateUserRecord(c)
+		handler.dpdateUserRecord(c)
 	})
 	return handler
 }
 
-func (handler *CategoryHttpHandler) DeleteUserRecord(c *gin.Context) {
+func (handler *CategoryHttpHandler) deleteUserRecord(c *gin.Context) {
 	var recordId = c.Param("recordId")
 
 	recordIdInt, recordIdErr := strconv.Atoi(recordId) // convert string to int
@@ -75,7 +75,7 @@ func (handler *CategoryHttpHandler) DeleteUserRecord(c *gin.Context) {
 	c.JSON(http.StatusOK, common.Success(""))
 }
 
-func (handler *CategoryHttpHandler) UpdateUserRecord(c *gin.Context) {
+func (handler *CategoryHttpHandler) dpdateUserRecord(c *gin.Context) {
 	var recordId = c.Param("recordId")
 	var username = c.Param("username")
 	recordIdInt, recordIdErr := strconv.Atoi(recordId) // convert string to int
@@ -121,7 +121,7 @@ type UpdateUserRecordRequestData struct {
 	Price     uint   `json:"price" binding:"required"`
 }
 
-func (handler *CategoryHttpHandler) FindUserCategories(c *gin.Context) {
+func (handler *CategoryHttpHandler) findUserCategories(c *gin.Context) {
 	var username = c.Param("username")
 	result, err := handler.categorySvc.FindUserCategoriesByUsername(username)
 	if err != nil {
@@ -148,7 +148,7 @@ type UserCategoryResponseData struct {
 	UpdateTime time.Time `json:"update_time"`
 }
 
-func (handler *CategoryHttpHandler) CreateUserRecord(c *gin.Context) {
+func (handler *CategoryHttpHandler) createUserRecord(c *gin.Context) {
 	var requestBody CreateUserRecordRequestData
 
 	if err := c.ShouldBindBodyWithJSON(&requestBody); err != nil {
@@ -198,7 +198,7 @@ type CreateUserRecordRequestData struct {
 	Price     uint   `json:"price" binding:"required"`
 }
 
-func (handler *CategoryHttpHandler) FindUserRecords(c *gin.Context) {
+func (handler *CategoryHttpHandler) findUserRecords(c *gin.Context) {
 	var username = c.Param("username")
 
 	pageNumber := c.DefaultQuery("page_number", "1")
