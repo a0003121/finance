@@ -2,6 +2,7 @@ package handler
 
 import (
 	"GoProject/common"
+	"GoProject/model"
 	"GoProject/module/category"
 	"GoProject/module/user"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -83,6 +85,11 @@ func (h ExcelHttpHandler) excelImport(c *gin.Context) {
 	}
 
 	var username = c.Param("username")
+	users, userErr := h.userSvc.FindUser(username)
+	if userErr != nil {
+		c.JSON(http.StatusOK, common.Fail(userErr.Error()))
+		return
+	}
 	userCategory, categoryErr := h.categorySvc.FindUserCategoriesByUsername(username)
 	if categoryErr != nil {
 		c.JSON(http.StatusOK, common.Fail(categoryErr.Error()))
@@ -94,6 +101,7 @@ func (h ExcelHttpHandler) excelImport(c *gin.Context) {
 
 	sheetName := f.GetSheetName(1)
 	rows := f.GetRows(sheetName)
+	var userRecords []model.UserFinanceRecord
 	for index, row := range rows {
 		if index == 0 {
 			continue
@@ -112,12 +120,33 @@ func (h ExcelHttpHandler) excelImport(c *gin.Context) {
 				c.JSON(http.StatusOK, common.Fail("Invalid date format"))
 				return
 			}
-			log.Print(dateTime)
-			log.Print(inputCategory)
-			log.Print(price)
+
+			num, numErr := strconv.ParseUint(price, 10, 32)
+			if numErr != nil {
+				c.JSON(http.StatusOK, common.Fail("Invalid num format"))
+				return
+			}
+
+			userRecords = append(userRecords, model.UserFinanceRecord{
+				UsersID:               users.ID,
+				UserFinanceCategoryId: categoryMap[inputCategory],
+				Price:                 uint(num),
+				SpendDate:             dateTime,
+			})
 		} else {
 			break
 		}
+	}
+
+	if len(userRecords) == 0 {
+		c.JSON(http.StatusOK, common.Fail("no data to import"))
+		return
+	}
+
+	createErr := h.categorySvc.CreateUserFinanceRecords(&userRecords)
+	if createErr != nil {
+		c.JSON(http.StatusOK, common.Fail(createErr.Error()))
+		return
 	}
 
 	// Respond with the cell value

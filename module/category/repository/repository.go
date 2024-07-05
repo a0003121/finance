@@ -54,6 +54,10 @@ func (c CategoryRepository) CreateUserFinanceRecord(userFinanceRecord *model.Use
 	return c.orm.Create(&userFinanceRecord).Error
 }
 
+func (c CategoryRepository) CreateUserFinanceRecords(userFinanceRecord *[]model.UserFinanceRecord) error {
+	return c.orm.Create(&userFinanceRecord).Error
+}
+
 func (c CategoryRepository) FindUserRecordsByUserIdPreload(userId uint, pageNumber int, pageSize int) (int64, []model.UserFinanceRecord, error) {
 	var result []model.UserFinanceRecord
 	offset := (pageNumber - 1) * pageSize

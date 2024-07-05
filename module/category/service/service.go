@@ -41,6 +41,10 @@ func (c CategoryService) CreateUserFinanceRecord(userFinanceRecord *model.UserFi
 	return c.repo.CreateUserFinanceRecord(userFinanceRecord)
 }
 
+func (c CategoryService) CreateUserFinanceRecords(userFinanceRecord *[]model.UserFinanceRecord) error {
+	return c.repo.CreateUserFinanceRecords(userFinanceRecord)
+}
+
 func (c CategoryService) FindUserRecordsByUserIdPreload(userId uint, pageNumber int, pageSize int) (int64, []model.UserFinanceRecord, error) {
 	return c.repo.FindUserRecordsByUserIdPreload(userId, pageNumber, pageSize)
 }
