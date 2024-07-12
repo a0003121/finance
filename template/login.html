@@ -56,12 +56,15 @@
 <body>
   <div id="app" class="login-container">
     <h2>Login</h2>
-    <form @submit.prevent="login">
+    <form @submit.prevent="">
       <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
       <input type="text" v-model="username" placeholder="Username" required>
       <input type="password" v-model="password" placeholder="Password" required>
-      <button type="submit" :disabled="!isFormValid">Login</button>
+      <button type="submit" @click="login" :disabled="!isFormValid">Login</button>
+      <br>
+      <button type="submit" @click="signUp" :disabled="!isFormValid">Sign Up</button>
     </form>
+    
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
@@ -97,6 +100,26 @@
           } catch (error) {
             this.errorMessage = 'An error occurred. Please try again later.';
           }
+        },
+        async signUp() {
+          
+          let response = await fetch('http://localhost:8888/user', {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              "username": this.username,
+              "password": this.password,
+              "email": "123456@gmail.com" //TODO
+            })
+          });
+          
+          let recordResult = await response.json();
+          
+          sessionStorage.setItem('authToken', recordResult.data);
+              window.location.href = 'home.html';
         }
       }
     });

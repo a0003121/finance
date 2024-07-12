@@ -3,6 +3,7 @@ package handler
 import (
 	"GoProject/common"
 	"GoProject/model"
+	"GoProject/module/jwt"
 	"GoProject/module/user"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -104,7 +105,7 @@ func (g *UserHttpHandler) createUsers(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, common.Success(users))
+	c.JSON(http.StatusOK, common.Success(jwt.GenerateToken(users)))
 }
 
 func (g *UserHttpHandler) findUserRoles(c *gin.Context) {

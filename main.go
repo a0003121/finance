@@ -49,6 +49,7 @@ func registerHandler(db *gorm.DB, server *gin.Engine) {
 	handler.NewUserHttpHandler(userService, server)
 	handler.NewLoginHttpHandler(loginService, server)
 	handler.NewCategoryHandler(categorySvc, userService, server)
+	handler.NewRecordHandler(categorySvc, userService, server)
 	handler.NewExcelHttpHandler(userService, categorySvc, server)
 
 	server.GET("/go", func(context *gin.Context) {

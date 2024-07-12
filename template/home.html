@@ -20,7 +20,7 @@
     </div>
 
     <h1>記的帳</h1>
-
+    <button class="pretty-button" v-on:click="logout">登出</button>
     <!------------User Record------------>
     <table>
       <thead>
@@ -116,6 +116,10 @@
         }
       },
       methods: {
+        logout() {
+          sessionStorage.removeItem('authToken');
+          window.location.href = 'login.html';
+        },
         async handleFileUpload(event) {
           this.loading = true;
           let formData = new FormData();
