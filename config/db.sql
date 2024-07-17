@@ -57,7 +57,8 @@ CREATE TABLE IF NOT EXISTS user_finance_category
     users_id    INT         NOT NULL,
     code        VARCHAR(50) NOT NULL,
     create_time DATETIME    NOT NULL,
-    update_time DATETIME
+    update_time DATETIME,
+    UNIQUE INDEX (code, users_id)
 );
 
 CREATE TABLE IF NOT EXISTS user_finance_record

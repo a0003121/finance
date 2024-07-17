@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>記的帳</title>
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <div id="app">
+    <button class="pretty-button" v-on:click="logout">登出</button>
+    <a href="home.html"><button class="pretty-button">記的帳</button></a>
+    <div v-if="loading">
+      <div id="preloader">
+        <div id="status">&nbsp;</div>
+      </div>
+    </div>
+
+    <h1>設定</h1>
+    <!------------User Category------------>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">類別</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="item in categoryResponseData.data" :key="item">
+          <td>{{ item.code }}</td>
+          <td>
+            <button class="pretty-button" v-on:click="editCategory(item.code)">Edit</button>
+            <button class="pretty-button" v-on:click="deleteCategory(item.code)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!------------Add Category------------>
+    <form @submit.prevent="addCategory">
+
+      <label for="type">類別:</label>
+      <input type="text" id="type" v-model.number="type">
+      <br>
+      <button type="submit" :disabled="notValid">Add Category</button>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.all.min.js"></script>
+  <script>
+
+    new Vue({
+      el: '#app',
+      data() {
+        return {
+          loading: true,
+          categoryResponseData: null,
+          type: null,
+          types: null,
+          username: null
+        };
+      },
+      created() {
+        this.fetchOption();
+      },
+      computed: {
+        notValid() {
+          return this.type == null || this.type == '';
+        }
+      },
+      methods: {
+        logout() {
+          sessionStorage.removeItem('authToken');
+          window.location.href = 'login.html';
+        },
+        async fetchOption() {
+          var jwtToken = sessionStorage.getItem('authToken');
+          const base64Url = jwtToken.split('.')[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const decodedPayload = JSON.parse(atob(base64));
+
+          const categoryResponse = await fetch('http://localhost:8888/user/category/' + decodedPayload.username);
+          const categoryResult = await categoryResponse.json();
+
+          this.types = categoryResult.data[0].code;
+          this.username = decodedPayload.username;
+          this.categoryResponseData = categoryResult;
+          this.loading = false;
+        },
+        async addCategory() {
+          let config = {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              "code": this.type,
+            })
+          }
+
+          const recordResponse = await fetch(`http://localhost:8888/user/category/${this.username}`, config);
+          const recordResult = await recordResponse.json();
+
+          console.log(recordResult);
+          // https://sweetalert2.github.io/#examples
+          Swal.fire({
+            position: "top-end",
+            icon: "success",
+            title: "success",
+            showConfirmButton: false,
+            timer: 1000
+          });
+          this.fetchOption();
+        },
+        async deleteCategory(code) {
+          let config = {
+            method: 'DELETE',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              "code": code,
+            })
+          }
+
+          const recordResponse = await fetch(`http://localhost:8888/user/category/${this.username}`, config);
+          Swal.fire({
+            position: "top-end",
+            icon: "success",
+            title: "success",
+            showConfirmButton: false,
+            timer: 1000
+          });
+          this.fetchOption();
+        },
+        async editCategory(code) {
+          console.log(code);
+          Swal.fire({
+            title: '修改',
+            showCancelButton: true,
+            html: `
+              <label for="editCategory">price:</label>
+              <input type="text" id="editCategory" value = ${code}>
+              `,
+            preConfirm: async () => {
+              try {
+                let config = {
+                  method: 'PUT',
+                  headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    "old_code": code,
+                    "new_code": document.getElementById("editCategory").value
+                  })
+                };
+
+                let githubUrl = `http://localhost:8888/user/category/${this.username}`;
+
+                let response = await fetch(githubUrl, config);
+                return response.json();
+              } catch (error) {
+                Swal.showValidationMessage(`
+                  Request failed: ${error}
+                `);
+              }
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+          }).then((result) => {
+            if (result.isConfirmed) {
+              Swal.fire({
+                position: "top-end",
+                icon: "success",
+                title: "success",
+                showConfirmButton: false,
+                timer: 1000
+              });
+              this.fetchOption();
+            }
+          });
+
+
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>

@@ -200,6 +200,28 @@ func (handler *RecordHttpHandler) findUserRecords(c *gin.Context) {
 
 	pageNumber := c.DefaultQuery("page_number", "1")
 	pageSize := c.DefaultQuery("page_size", "5")
+	startDate := c.DefaultQuery("start_date", "")
+	endDate := c.DefaultQuery("end_date", "")
+
+	var startDateTime time.Time
+	var endDateTime time.Time
+	if startDate != "" {
+		startDateTime1, err := time.Parse("2006-01-02", startDate)
+		if err != nil {
+			c.JSON(400, gin.H{"error": "Invalid date format"})
+			return
+		}
+		startDateTime = startDateTime1
+	}
+
+	if endDate != "" {
+		endDateTime2, err := time.Parse("2006-01-02", endDate)
+		if err != nil {
+			c.JSON(400, gin.H{"error": "Invalid date format"})
+			return
+		}
+		endDateTime = endDateTime2
+	}
 
 	pageNumberInt, pageNumberErr := strconv.Atoi(pageNumber) // convert string to int
 	if pageNumberErr != nil {
@@ -217,7 +239,7 @@ func (handler *RecordHttpHandler) findUserRecords(c *gin.Context) {
 		return
 	}
 
-	count, records, recordErr := handler.categorySvc.FindUserRecordsByUserIdPreload(users.ID, pageNumberInt, pageSizeInt)
+	count, records, recordErr := handler.categorySvc.FindUserRecordsByUserIdPreload(users.ID, pageNumberInt, pageSizeInt, startDateTime, endDateTime)
 	if recordErr != nil {
 		c.JSON(http.StatusOK, common.Fail(recordErr.Error()))
 		return

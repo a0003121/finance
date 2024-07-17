@@ -68,7 +68,7 @@ func (u UserService) CreateUserData(user *Users, userRoleType *UserRoleType) err
 		return userRoleErr
 	}
 
-	categoryErr := u.categoryService.CreateUserFinanceCategory(tx, *user)
+	categoryErr := u.categoryService.CreateAllUserFinanceCategory(tx, *user)
 	if categoryErr != nil {
 		tx.Rollback()
 		return categoryErr

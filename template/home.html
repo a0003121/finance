@@ -10,9 +10,9 @@
 </head>
 
 <body>
-
   <div id="app">
-
+    <button class="pretty-button" v-on:click="logout">登出</button>
+    <a href="setting.html"><button class="pretty-button">設定</button></a>
     <div v-if="loading">
       <div id="preloader">
         <div id="status">&nbsp;</div>
@@ -20,7 +20,14 @@
     </div>
 
     <h1>記的帳</h1>
-    <button class="pretty-button" v-on:click="logout">登出</button>
+
+    <label>Start Date:</label>
+    <input type="date" v-model="startDate">
+
+    <label>End Date:</label>
+    <input type="date" v-model="endDate">
+
+    <button class="pretty-button" v-on:click="fetchRecord(1)">Filter</button>
     <!------------User Record------------>
     <table>
       <thead>
@@ -83,6 +90,7 @@
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.all.min.js"></script>
   <script>
+
     new Vue({
       el: '#app',
       data() {
@@ -95,7 +103,9 @@
           price: null,
           date: null,
           types: null,
-          username: null
+          username: null,
+          startDate: null,
+          endDate: null
         };
       },
       created() {
@@ -140,7 +150,7 @@
             showConfirmButton: false,
             timer: 1000
           });
-      
+
         },
         async downloadExcel() {
           this.loading = true;
@@ -168,13 +178,23 @@
           this.username = decodedPayload.username;
           this.categoryResponseData = categoryResult;
         },
-        async fetchRecord() {
+        async fetchRecord(pageNumber) {
+          if (pageNumber != null) {
+            this.recordPage = pageNumber;
+          }
           var jwtToken = sessionStorage.getItem('authToken');
           const base64Url = jwtToken.split('.')[1];
           const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
           const decodedPayload = JSON.parse(atob(base64));
 
-          const recordResponse = await fetch('http://localhost:8888/user/' + decodedPayload.username + '/record?page_number=' + this.recordPage);
+          let url = `http://localhost:8888/user/${decodedPayload.username}/record?page_number=${this.recordPage}`;
+          if (this.startDate != null) {
+            url += `&start_date=${this.startDate}`;
+          }
+          if (this.endDate != null) {
+            url += `&end_date=${this.endDate}`;
+          }
+          const recordResponse = await fetch(url);
           const recordResult = await recordResponse.json();
 
           this.username = decodedPayload.username;
@@ -240,7 +260,7 @@
         async editRecord(editItem) {
           console.log(editItem);
           Swal.fire({
-            title: 'Multiple inputs',
+            title: '修改',
             showCancelButton: true,
             html: `
               <label>類別:</label>
@@ -308,8 +328,6 @@
               this.fetchRecord();
             }
           });
-
-
         }
       }
     });

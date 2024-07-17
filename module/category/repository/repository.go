@@ -4,6 +4,7 @@ import (
 	"GoProject/model"
 	"GoProject/module/category"
 	"gorm.io/gorm"
+	"time"
 )
 
 type CategoryRepository struct {
@@ -12,6 +13,10 @@ type CategoryRepository struct {
 
 func NewCategoryRepository(orm *gorm.DB) category.Repository {
 	return &CategoryRepository{orm: orm}
+}
+
+func (c CategoryRepository) BeginTransaction() *gorm.DB {
+	return c.orm.Begin()
 }
 
 func (c CategoryRepository) FindAllFinanceCategory() ([]model.FinanceCategory, error) {
@@ -58,13 +63,22 @@ func (c CategoryRepository) CreateUserFinanceRecords(userFinanceRecord *[]model.
 	return c.orm.Create(&userFinanceRecord).Error
 }
 
-func (c CategoryRepository) FindUserRecordsByUserIdPreload(userId uint, pageNumber int, pageSize int) (int64, []model.UserFinanceRecord, error) {
+func (c CategoryRepository) FindUserRecordsByUserIdPreload(userId uint, pageNumber int, pageSize int, startDateTime time.Time, endDateTime time.Time) (int64, []model.UserFinanceRecord, error) {
 	var result []model.UserFinanceRecord
 	offset := (pageNumber - 1) * pageSize
 
 	var count int64
-	countErr := c.orm.Table("user_finance_record").
-		Where("users_id = ?", userId).
+	baseQuery := c.orm.Table("user_finance_record").
+		Where("users_id = ?", userId)
+
+	if startDateTime != (time.Time{}) {
+		baseQuery.Where("spend_date >= ?", startDateTime)
+	}
+	if endDateTime != (time.Time{}) {
+		baseQuery.Where("spend_date <= ?", endDateTime)
+	}
+
+	countErr := baseQuery.
 		Count(&count).
 		Error
 
@@ -72,10 +86,9 @@ func (c CategoryRepository) FindUserRecordsByUserIdPreload(userId uint, pageNumb
 		return 0, nil, countErr
 	}
 
-	err := c.orm.Preload("UserFinanceCategory").
-		Where("users_id = ?", userId).
+	err := baseQuery.
 		Order("spend_date desc").
-		Offset(offset).  // Offset for the pages
+		Offset(offset). // Offset for the pages
 		Limit(pageSize). // Limit for the page size
 		Find(&result).
 		Error
@@ -87,6 +100,21 @@ func (c CategoryRepository) DeleteUserFinanceRecordById(recordId uint) error {
 	return c.orm.Delete(&userFinanceRecord, recordId).Error
 }
 
+func (c CategoryRepository) DeleteUserFinanceCategoryById(tx *gorm.DB, categoryId uint) error {
+	var userFinanceCategory model.UserFinanceCategory
+	if tx != nil {
+		return tx.Delete(&userFinanceCategory, categoryId).Error
+	}
+	return c.orm.Delete(&userFinanceCategory, categoryId).Error
+}
+
+func (c CategoryRepository) DeleteUserFinanceRecordByCategoryId(tx *gorm.DB, categoryId uint) error {
+	if tx != nil {
+		return tx.Where("user_finance_category_id = ?", categoryId).Delete(&model.UserFinanceRecord{}).Error
+	}
+	return c.orm.Where("user_finance_category_id = ?", categoryId).Delete(&model.UserFinanceRecord{}).Error
+}
+
 func (c CategoryRepository) ModifyUserFinanceRecordById(recordId uint, data map[string]interface{}) error {
 	var err error
 	var userFinanceRecord model.UserFinanceRecord
@@ -96,6 +124,11 @@ func (c CategoryRepository) ModifyUserFinanceRecordById(recordId uint, data map[
 		return findErr
 	}
 	err = c.orm.Model(&userFinanceRecord).Updates(data).Error
+	return err
+}
+
+func (c CategoryRepository) ModifyUserFinanceCategory(userFinanceCategory *model.UserFinanceCategory, data map[string]interface{}) error {
+	err := c.orm.Model(&userFinanceCategory).Updates(data).Error
 	return err
 }
 
