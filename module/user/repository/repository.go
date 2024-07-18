@@ -65,6 +65,12 @@ func (u UserRepository) FindUserByUsername(username string) (*Users, error) {
 	return users, result.Error
 }
 
+func (u UserRepository) FindUserByUserType(userType string) (*[]Users, error) {
+	var users *[]Users
+	result := u.orm.Where("user_type = ?", userType).Find(&users)
+	return users, result.Error
+}
+
 func (u UserRepository) CreateUserRole(tx *gorm.DB, userRole *UserRole) (*UserRole, error) {
 	var err error
 

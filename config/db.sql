@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS users
     id          INT AUTO_INCREMENT PRIMARY KEY,
     username    VARCHAR(50)  NOT NULL,
     password    VARCHAR(100) NOT NULL,
+    user_type   VARCHAR(10)  NOT NULL,
     email       VARCHAR(100) NOT NULL,
     create_time DATETIME     NOT NULL,
     update_time DATETIME,

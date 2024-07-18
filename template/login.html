@@ -47,12 +47,28 @@
             if (response.data.status == 'success') {
               this.errorMessage = '';
               // console.log(response.data)
-              sessionStorage.setItem('authToken', response.data.data);
-              window.location.href = 'home.html';
+              let authToken = response.data.data;
+              console.log(authToken)
+              let base64Url = authToken.split('.')[1];
+              let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+              let decodedPayload = JSON.parse(atob(base64));
+
+              let storageToken = {
+                "token" : authToken,
+                "userInfo" : decodedPayload
+              }
+              console.log(storageToken)
+
+              if(storageToken.userInfo.userType == 'ADMIN') {
+                window.location.href = 'admin.html';
+              } else {
+                window.location.href = 'home.html';
+              }
             } else {
               this.errorMessage = response.data.message || 'Invalid username or password.';
             }
           } catch (error) {
+            console.log(error)
             this.errorMessage = 'An error occurred. Please try again later.';
           }
         },

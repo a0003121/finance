@@ -8,6 +8,7 @@ type Users struct {
 	BaseModel
 	Username  string     `json:"username" gorm:"size:50;not null"`
 	Password  string     `json:"password" gorm:"size:100;not null"`
+	UserType  string     `json:"userType" gorm:"size:100;not null"`
 	Email     string     `json:"email" gorm:"size:100;not null;"`
 	UserRoles []UserRole `gorm:"foreignKey:UsersID"`
 }

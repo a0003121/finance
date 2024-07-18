@@ -74,10 +74,6 @@
         }
       },
       methods: {
-        logout() {
-          sessionStorage.removeItem('authToken');
-          window.location.href = 'login.html';
-        },
         async fetchOption() {
           var jwtToken = sessionStorage.getItem('authToken');
           const base64Url = jwtToken.split('.')[1];

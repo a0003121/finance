@@ -21,6 +21,7 @@ type UserHttpHandler struct {
 func NewUserHttpHandler(svc user.Service, server *gin.Engine) UserHttpHandler {
 	var handler = UserHttpHandler{svc: svc}
 
+	// find one user
 	server.GET("/user/:username", func(c *gin.Context) {
 		log.Printf("[%s]%s", c.Request.Method, c.Request.URL)
 		//_ = jwt.Authenticate(c) && jwt.IsAdmin(c)
@@ -28,6 +29,15 @@ func NewUserHttpHandler(svc user.Service, server *gin.Engine) UserHttpHandler {
 		handler.findUser(c)
 	})
 
+	// find users
+	server.GET("/users", func(c *gin.Context) {
+		log.Printf("[%s]%s", c.Request.Method, c.Request.URL)
+		//_ = jwt.Authenticate(c) && jwt.IsAdmin(c)
+	}, func(c *gin.Context) {
+		handler.findUsers(c)
+	})
+
+	//create user
 	server.POST("/user", func(c *gin.Context) {
 		log.Printf("[%s]%s with request body %s", c.Request.Method, c.Request.URL, c.Request.Body)
 		//_ = jwt.Authenticate(c) && jwt.IsAdmin(c)
@@ -35,6 +45,7 @@ func NewUserHttpHandler(svc user.Service, server *gin.Engine) UserHttpHandler {
 		handler.createUsers(c)
 	})
 
+	//find user roles
 	server.GET("/user_roles", func(c *gin.Context) {
 		log.Printf("[%s]%s", c.Request.Method, c.Request.URL)
 		//_ = jwt.Authenticate(c) && jwt.IsAdmin(c)
@@ -72,6 +83,16 @@ func (g *UserHttpHandler) findUser(c *gin.Context) {
 	}
 }
 
+func (g *UserHttpHandler) findUsers(c *gin.Context) {
+	var userType = c.DefaultQuery("role_type", "USER")
+	users, err := g.svc.FindUserByUserType(userType)
+	if err != nil {
+		c.JSON(http.StatusOK, common.Fail(err.Error()))
+	} else {
+		c.JSON(http.StatusOK, common.Success(users))
+	}
+}
+
 type CreateUserRequestBody struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
@@ -97,6 +118,7 @@ func (g *UserHttpHandler) createUsers(c *gin.Context) {
 		Username: requestBody.Username,
 		Password: encryptedPassword,
 		Email:    requestBody.Email,
+		UserType: common.USER_ROLE_USER,
 	}
 
 	userErr := g.svc.CreateUserData(&users, userRoleType)

@@ -20,6 +20,7 @@ func GenerateToken(user Users) string {
 	})
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"username":  user.Username,
+		"userType":  user.UserType,
 		"userRoles": userRoles,
 		"exp":       time.Now().Add(time.Hour * 72).Unix(),
 	})

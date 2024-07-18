@@ -88,7 +88,7 @@ func (c CategoryRepository) FindUserRecordsByUserIdPreload(userId uint, pageNumb
 
 	err := baseQuery.
 		Order("spend_date desc").
-		Offset(offset). // Offset for the pages
+		Offset(offset).  // Offset for the pages
 		Limit(pageSize). // Limit for the page size
 		Find(&result).
 		Error

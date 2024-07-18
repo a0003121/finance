@@ -126,10 +126,6 @@
         }
       },
       methods: {
-        logout() {
-          sessionStorage.removeItem('authToken');
-          window.location.href = 'login.html';
-        },
         async handleFileUpload(event) {
           this.loading = true;
           let formData = new FormData();
@@ -182,12 +178,11 @@
           if (pageNumber != null) {
             this.recordPage = pageNumber;
           }
-          var jwtToken = sessionStorage.getItem('authToken');
-          const base64Url = jwtToken.split('.')[1];
-          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-          const decodedPayload = JSON.parse(atob(base64));
 
-          let url = `http://localhost:8888/user/${decodedPayload.username}/record?page_number=${this.recordPage}`;
+          var jwtToken = JSON.parse(sessionStorage.getItem('authToken'));
+          this.username = jwtToken.userInfo.username
+          
+          let url = `http://localhost:8888/user/${this.username}/record?page_number=${this.recordPage}`;
           if (this.startDate != null) {
             url += `&start_date=${this.startDate}`;
           }
@@ -197,7 +192,6 @@
           const recordResponse = await fetch(url);
           const recordResult = await recordResponse.json();
 
-          this.username = decodedPayload.username;
           this.recordResponseData = recordResult;
           this.totalPage = recordResult.data.total_page;
           this.loading = false;

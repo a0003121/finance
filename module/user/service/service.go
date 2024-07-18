@@ -19,6 +19,10 @@ func (u UserService) FindUserByUsernamePreload(username string) (*Users, error) 
 	return u.repo.FindUserByUsernamePreload(username)
 }
 
+func (u UserService) FindUserByUserType(userType string) (*[]Users, error) {
+	return u.repo.FindUserByUserType(userType)
+}
+
 func (u UserService) UpdateUser(user *Users, data map[string]interface{}) (*Users, error) {
 	return u.repo.ModifyUser(user, data)
 }
