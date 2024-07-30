@@ -63,13 +63,12 @@ func (c CategoryRepository) CreateUserFinanceRecords(userFinanceRecord *[]model.
 	return c.orm.Create(&userFinanceRecord).Error
 }
 
-func (c CategoryRepository) FindUserRecordsByUserIdPreload(userId uint, pageNumber int, pageSize int, startDateTime time.Time, endDateTime time.Time) (int64, []model.UserFinanceRecord, error) {
+func (c CategoryRepository) FindUserRecordsPageByUserIdPreload(userId uint, pageNumber int, pageSize int, startDateTime time.Time, endDateTime time.Time) (int64, []model.UserFinanceRecord, error) {
 	var result []model.UserFinanceRecord
 	offset := (pageNumber - 1) * pageSize
 
 	var count int64
-	baseQuery := c.orm.Table("user_finance_record").
-		Where("users_id = ?", userId)
+	baseQuery := c.orm.Preload("UserFinanceCategory").Table("user_finance_record").Where("users_id = ?", userId)
 
 	if startDateTime != (time.Time{}) {
 		baseQuery.Where("spend_date >= ?", startDateTime)
@@ -93,6 +92,26 @@ func (c CategoryRepository) FindUserRecordsByUserIdPreload(userId uint, pageNumb
 		Find(&result).
 		Error
 	return count, result, err
+}
+
+func (c CategoryRepository) FindUserRecordsByUserIdPreload(userId uint, startDateTime time.Time, endDateTime time.Time) ([]model.UserFinanceRecord, error) {
+	var result []model.UserFinanceRecord
+
+	baseQuery := c.orm.Table("user_finance_record").
+		Preload("UserFinanceCategory").
+		Where("users_id = ?", userId)
+
+	if startDateTime != (time.Time{}) {
+		baseQuery.Where("spend_date >= ?", startDateTime)
+	}
+	if endDateTime != (time.Time{}) {
+		baseQuery.Where("spend_date <= ?", endDateTime)
+	}
+	err := baseQuery.
+		Order("spend_date desc").
+		Find(&result).
+		Error
+	return result, err
 }
 
 func (c CategoryRepository) DeleteUserFinanceRecordById(recordId uint) error {

@@ -239,7 +239,7 @@ func (handler *RecordHttpHandler) findUserRecords(c *gin.Context) {
 		return
 	}
 
-	count, records, recordErr := handler.categorySvc.FindUserRecordsByUserIdPreload(users.ID, pageNumberInt, pageSizeInt, startDateTime, endDateTime)
+	count, records, recordErr := handler.categorySvc.FindUserRecordsPageByUserIdPreload(users.ID, pageNumberInt, pageSizeInt, startDateTime, endDateTime)
 	if recordErr != nil {
 		c.JSON(http.StatusOK, common.Fail(recordErr.Error()))
 		return

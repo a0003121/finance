@@ -51,6 +51,7 @@ func registerHandler(db *gorm.DB, server *gin.Engine) {
 	handler.NewCategoryHandler(categorySvc, userService, server)
 	handler.NewRecordHandler(categorySvc, userService, server)
 	handler.NewExcelHttpHandler(userService, categorySvc, server)
+	handler.NewStatisticsHttpHandler(categorySvc, userService, server)
 
 	server.GET("/go", func(context *gin.Context) {
 		var intChen = make(chan int, 3)
