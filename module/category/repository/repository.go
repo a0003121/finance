@@ -68,7 +68,7 @@ func (c CategoryRepository) FindUserRecordsPageByUserIdPreload(userId uint, page
 	offset := (pageNumber - 1) * pageSize
 
 	var count int64
-	baseQuery := c.orm.Preload("UserFinanceCategory").Table("user_finance_record").Where("users_id = ?", userId)
+	baseQuery := c.orm.Table("user_finance_record").Where("users_id = ?", userId)
 
 	if startDateTime != (time.Time{}) {
 		baseQuery.Where("spend_date >= ?", startDateTime)
@@ -86,8 +86,9 @@ func (c CategoryRepository) FindUserRecordsPageByUserIdPreload(userId uint, page
 	}
 
 	err := baseQuery.
+		Preload("UserFinanceCategory").
 		Order("spend_date desc").
-		Offset(offset).  // Offset for the pages
+		Offset(offset). // Offset for the pages
 		Limit(pageSize). // Limit for the page size
 		Find(&result).
 		Error

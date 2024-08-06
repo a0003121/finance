@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>記的帳</title>
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <div id="app">
+    <button class="pretty-button" v-on:click="logout">登出</button>
+    <a href="home.html"><button class="pretty-button">記的帳</button></a>
+    <div v-if="loading">
+      <div id="preloader">
+        <div id="status">&nbsp;</div>
+      </div>
+    </div>
+
+    <h1>分析</h1>
+    <!------------chart------------>
+    <div>
+      <h2 v-if="noData">NO DATA</h2>
+      <canvas id="myChart"></canvas>
+    </div>
+
+    <h2>月分析</h2>
+    <label>年份: </label><input type="number" min="2020" max="2099" step="1" v-model="year" />
+    <button type="submit" @click="showGraphByMonth(year)">確認</button>
+
+    <h2>年分析</h2>
+    <label>起始年份: </label><input type="number" min="2020" max="2099" step="1" v-model="startYear" />
+    <label>結束年份: </label><input type="number" min="2020" max="2099" step="1" v-model="endYear" />
+    <button type="submit" @click="showGraphByYear(startYear, endYear)">確認</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.all.min.js"></script>
+  <script src="./js/main.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const context = new Vue({
+      el: '#app',
+      data() {
+        return {
+          loading: true,
+          username: null,
+          year: new Date().getFullYear(),
+          chart: null,
+          noData: false,
+          startYear: new Date().getFullYear(),
+          endYear: new Date().getFullYear()
+        };
+      },
+      created() {
+        var jwtToken = sessionStorage.getItem('authToken');
+        let base64Url = jwtToken.split('.')[1];
+        let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        let decodedPayload = JSON.parse(atob(base64));
+        this.username = decodedPayload.username;
+
+      },
+      methods: {
+        async showGraphByMonth(year) {
+          this.loading = false;
+          if (this.chart != null) {
+            this.chart.destroy();
+          }
+          let categoryResponse = await fetch('http://localhost:8888/user/category/' + this.username);
+          let categoryResult = await categoryResponse.json();
+          let response = await fetch(`http://localhost:8888/statistics/${this.username}/monthly?year=${year}`);
+          let responseResult = await response.json();
+
+          if (responseResult.data == null) {
+            this.noData = true;
+            return;
+          } else {
+            this.noData = false;
+          }
+          let dataList = new Array();
+          let categoryMap = new Map();
+          categoryResult.data.forEach(function (currentValue) {
+            categoryMap.set(currentValue.code, {
+              label: currentValue.code,
+              data: new Array(12).fill(0)
+            })
+          });
+          responseResult.data.forEach(function (currentValue) {
+            currentValue.Details.forEach(function (detail) {
+              categoryMap.get(detail.Category).data[currentValue.Month - 1] = detail.Spend
+            });
+          });
+
+          const ctx = document.getElementById('myChart');
+          Chart.register(Chart.Colors);
+          this.chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"],
+              datasets: Array.from(categoryMap.values())
+            },
+            options: {
+              scales: {
+                x: {
+                  stacked: true,
+                },
+                y: {
+                  stacked: true
+                }
+              }
+            }
+          });
+
+          this.chart.update();
+          this.loading = false;
+        },
+
+        async showGraphByYear(startYear, endYear) {
+          this.loading = false;
+          if (this.chart != null) {
+            this.chart.destroy();
+          }
+          let categoryResponse = await fetch('http://localhost:8888/user/category/' + this.username);
+          let categoryResult = await categoryResponse.json();
+          console.log(categoryResult)
+          let response = await fetch(`http://localhost:8888/statistics/${this.username}/yearly?start_year=${startYear}&end_year=${endYear}`);
+          let responseResult = await response.json();
+          console.log(responseResult)
+          if (responseResult.data == null) {
+            this.noData = true;
+            return;
+          } else {
+            this.noData = false;
+          }
+          let categoryMap = new Map();
+          
+          categoryResult.data.forEach(function (currentValue) {
+            categoryMap.set(currentValue.code, {
+              label: currentValue.code,
+              data: new Array()
+            })
+          });
+
+          let labelLists = new Array();
+          responseResult.data.sort(function(a, b){return a.Year-b.Year});
+          let count = 1;
+          responseResult.data.forEach(function (currentValue) {
+            labelLists.push(currentValue.Year)
+            currentValue.Details.forEach(function (detail) {
+              categoryMap.get(detail.Category).data.push(detail.Spend);
+            });
+
+            categoryMap.values().forEach(function (ob) {
+              if(ob.data.length < count) {
+                ob.data.push(0);
+              }
+            });
+            count++;
+          });
+          const ctx = document.getElementById('myChart');
+          Chart.register(Chart.Colors);
+          this.chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: labelLists,
+              datasets: Array.from(categoryMap.values())
+            },
+            options: {
+              scales: {
+                x: {
+                  stacked: true,
+                },
+                y: {
+                  stacked: true
+                }
+              }
+            }
+          });
+
+          this.chart.update();
+          this.loading = false;
+        }
+      },
+
+    });
+
+    context.showGraphByMonth(context.year);
+  </script>
+</body>
+
+</html>

@@ -57,9 +57,8 @@ func (handler *StatisticsHttpHandler) getYearlyReport(c *gin.Context) {
 			c.JSON(400, gin.H{"error": "Invalid date format"})
 			return
 		}
-		endDateTime = startDateTime1
+		endDateTime = startDateTime1.AddDate(1, 0, 0)
 	}
-
 	users, userErr := handler.userSvc.FindUser(username)
 	if userErr != nil {
 		c.JSON(http.StatusOK, common.Fail(userErr.Error()))
@@ -103,27 +102,22 @@ type YearlyReportResponseData struct {
 
 func (handler *StatisticsHttpHandler) getMonthReport(c *gin.Context) {
 	var username = c.Param("username")
-	var startMonth = c.DefaultQuery("start_month", "")
-	var endMonth = c.DefaultQuery("end_month", "")
+	var year = c.DefaultQuery("year", "")
+	if year == "" {
+		c.JSON(400, gin.H{"error": "No data"})
+		return
+	}
+	var startMonth = year + "-01-01"
 
 	var startDateTime time.Time
 	var endDateTime time.Time
-	if startMonth != "" {
-		startDateTime1, err := time.Parse("2006-01", startMonth)
-		if err != nil {
-			c.JSON(400, gin.H{"error": "Invalid date format"})
-			return
-		}
-		startDateTime = startDateTime1
+	startDateTime1, err := time.Parse("2006-01-02", startMonth)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid date format"})
+		return
 	}
-	if endMonth != "" {
-		startDateTime1, err := time.Parse("2006-01", endMonth)
-		if err != nil {
-			c.JSON(400, gin.H{"error": "Invalid date format"})
-			return
-		}
-		endDateTime = startDateTime1
-	}
+	startDateTime = startDateTime1.AddDate(0, 0, -1)
+	endDateTime = startDateTime1.AddDate(1, 0, -1)
 
 	users, userErr := handler.userSvc.FindUser(username)
 	if userErr != nil {

@@ -13,6 +13,7 @@
   <div id="app">
     <button class="pretty-button" v-on:click="logout">登出</button>
     <a href="setting.html"><button class="pretty-button">設定</button></a>
+    <a href="chart.html"><button class="pretty-button">分析</button></a>
     <div v-if="loading">
       <div id="preloader">
         <div id="status">&nbsp;</div>
@@ -89,6 +90,7 @@
   <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.all.min.js"></script>
+  <script src="./js/main.js"></script>
   <script>
 
     new Vue({

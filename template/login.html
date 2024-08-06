@@ -58,7 +58,7 @@
                 "userInfo" : decodedPayload
               }
               console.log(storageToken)
-
+              sessionStorage.setItem('authToken', JSON.stringify(storageToken));
               if(storageToken.userInfo.userType == 'ADMIN') {
                 window.location.href = 'admin.html';
               } else {
