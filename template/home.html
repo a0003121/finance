@@ -83,6 +83,7 @@
 
     <div>
       <button class="pretty-button" v-on:click="downloadExcel">Download Excel</button>
+      <button class="pretty-button" v-on:click="downloadTemplate">Download Template</button>
       <input id="fileUpload" type="file" @change="handleFileUpload" />
     </div>
   </div>
@@ -158,6 +159,19 @@
           const link = document.createElement('a');
           link.href = url;
           link.setAttribute('download', 'record.xlsx');
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          this.loading = false;
+        },
+        async downloadTemplate() {
+          this.loading = true;
+          let response = await fetch(`http://localhost:8888/user/${this.username}/excel_template`);
+          let blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', 'excel_template.xlsx');
           document.body.appendChild(link);
           link.click();
           link.remove();

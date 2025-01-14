@@ -1,7 +1,7 @@
 version: '3' #指定版本
 services:    #服务根节点
   mysql:
-    image: mysql
+    image: mysql:8.0
     command: [
       '--default-authentication-plugin=mysql_native_password',
       '--character-set-server=utf8mb4',
@@ -18,4 +18,4 @@ services:    #服务根节点
 #    volumes:
 #      - ./setting/db/init.sql:/docker-entrypoint-initdb.d/init.sql
 #      - ./setting/db/init_data.sql:/docker-entrypoint-initdb.d/init_data.sql
-  #      - ./server/mysql/common:/var/lib/mysql #留下數據，就算container關了還是有資料存在
+#        - ./server/mysql/common:/var/lib/mysql #留下數據，就算container關了還是有資料存在

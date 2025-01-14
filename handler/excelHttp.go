@@ -228,6 +228,15 @@ func (h ExcelHttpHandler) exportExcelRecords(c *gin.Context) {
 	file := excelize.NewFile()
 	sheetName := "Sheet1"
 
+	dateStyle, styleErr := file.NewStyle(`{
+		"number_format": 14
+	}`)
+
+	if styleErr != nil {
+		c.JSON(http.StatusOK, common.Fail(styleErr.Error()))
+	}
+	file.SetCellStyle(sheetName, "A2", "A"+strconv.Itoa(len(records)+1), dateStyle)
+
 	file.SetCellValue(sheetName, "A1", "日期")
 	file.SetCellValue(sheetName, "B1", "類別")
 	file.SetCellValue(sheetName, "C1", "金額")
